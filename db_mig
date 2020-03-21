@@ -20,33 +20,33 @@ class dbmg(object):
           self.rpassword = rpassword
 
       def backup(self):
-          os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ../miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ../migdata >> ../miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
+          os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./migdata >> ./miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
       
 
       def restore(self):
-          os.system("nohup ./migload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ../migdata >> ../miglog/migrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
+          os.system("nohup ./migload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ./migdata >> ./miglog/migrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
       
       def syn(self):
-          os.system("nohup ./migsyn  --log-file ../miglog/migsyn.log  -config ../migetc/migsyn.conf > /dev/null 2>&1 &")
+          os.system("nohup ./migsyn  --log-file ./miglog/migsyn.log  -config ./migetc/migsyn.conf > /dev/null 2>&1 &")
 
 
       def readlog(self):
-          with open("../miglog/migsyn.log","r") as f:
+          with open("./miglog/migsyn.log","r") as f:
                context = f.readlines()
                return context
                 
       def get_binlog(self):
-          with open("../migdata/metadata","r") as f:
+          with open("./migdata/metadata","r") as f:
                context = f.readlines()
                return context
 
 
       def diff(self):
-          os.system("nohup ./migsync_diff   --config  ../migetc/migdiff.conf > ../miglog/mig_diff_report.log 2>&1 &")
+          os.system("nohup ./migsync_diff   --config  ./migetc/migdiff.conf > ./miglog/mig_diff_report.log 2>&1 &")
 
 
       def difflog(self):
-          with open("../miglog/mig_diff_report.log","r") as f:
+          with open("./miglog/mig_diff_report.log","r") as f:
                context = f.readlines()
                return context
 
@@ -116,32 +116,32 @@ def rsdb():
 
 def mulu():
     try:
-         if os.path.isdir('../miglog'):
+         if os.path.isdir('./miglog'):
              pass
          else:
-             os.mkdir('../miglog')
-         if os.path.isdir('../migetc'):
+             os.mkdir('./miglog')
+         if os.path.isdir('./migetc'):
              pass
          else:
-             os.mkdir('../migetc')
-         if os.path.isdir('../migdata'):
+             os.mkdir('./migetc')
+         if os.path.isdir('./migdata'):
              pass
          else:
-             os.mkdir('../migdata')
-         if os.path.isfile('../migetc/migsyn.conf'):
+             os.mkdir('./migdata')
+         if os.path.isfile('./migetc/migsyn.conf'):
              pass
          else:
-            os.system("cp ./migsyn.conf ../migetc")
+            os.system("cp ./migsyn.conf ./migetc")
 
-         if os.path.isfile('../migetc/migdiff.conf'):
+         if os.path.isfile('./migetc/migdiff.conf'):
             pass
          else:
-            os.system("cp ./migdiff.conf ../migetc")
+            os.system("cp ./migdiff.conf ./migetc")
 
-         if os.path.isfile('../migetc/migsyn.meta'):
+         if os.path.isfile('./migetc/migsyn.meta'):
             pass
          else:
-            os.system("cp ./migsyn.meta ../migetc")
+            os.system("cp ./migsyn.meta ./migetc")
 
     except:
          print('目录已经存在')
