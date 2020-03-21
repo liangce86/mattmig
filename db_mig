@@ -201,7 +201,7 @@ def menu():
          else:
                 print("有错误，请重新输入")
        except:
-             #print("输入错误，请返回主菜单!!")
+             print("输入错误，请返回主菜单!!")
      
 
 
