@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+#coding:utf8
+#author:liangce
+import os,re,sys,datetime
+def jys_print():
+          print("\033[1;32;40m###################################################[dbmigv2.0控制台(mysql)]################################################\033[34m")
+          print('dbmig介绍')
+          print('Dbmig是一款利用binlog日志同步mysql数据库数据的软件，支持myisam、innodb引擎，实时同步业务数据库表数据，源实例mysql系统库、\n状态库、存储过程、触发器、DDL更新不在支持范围。\n  在使用前本软件前，建议用户检查源实例和目的实例的引擎、参数、字符集等是否一致，并不再进行DDL相关操作。\n  dbmig打开时候会自动在上一级目录创建migdata、migetc、miglog三个文件夹,分别存放备份文件、配置文件和日志文件。\n  备份账号应具有RELOAD, REPLICATION SLAVE, REPLICATION CLIENT和该对象的权限，此版本支持同时备份三个库，若超过限制，\n请联系我们升级版本。\n  全库还原,默认先删除目标冲突库、再进行还原。\n  校验数据，校验数据前请配置migetc目录下migdiff.conf，确定要校验的数据库和表。\n  增量数据同步，增量数据同步前请选择"8"查看binlog信息，并手动更新migetc目录下的migsyn.meta文件binglog相关信息，\n同时配置migetc目录下的migsyn.conf中的源端和目的端的数据库连接信息，方可开始实时增量同步。\n  所有相关操日志记录均在记录在miglog目录文件中。')
+          print('')
+          menu = '0:返回主菜单'
+          print(menu.rjust(1))                                                                    
+          print('')
+          dbbk = '1:全库备份'                                                                               
+          print(dbbk.rjust(1))                                                                     
+          print('')         
+          dbrestore = '2:全库还原'                                                                        
+          print(dbrestore.rjust(1))                                                                     
+          print('')
+          check = '3:校验数据'              
+          print(check.rjust(1))                                                           
+          print('')
+          incre = '4:增量数据同步'                                                                              
+          print(incre.rjust(1))                                                                  
+          print('')
+          vclog = '5:查看同步日志'                                                                               
+          print(vclog.rjust(1))                                                                  
+          print('')
+          chlog = '6:查看校验日志'                                                                                 
+          print(chlog.rjust(1))                                                                 
+          print('')
+          stopsyn = '7:停止增量同步。'
+          print(stopsyn.rjust(1))
+          print('')
+          logdir =  '8:查看源库biglog信息。'
+          print(logdir.rjust(1))
+          print('')
+          logout = '100:退出'                                                                
+          print(logout.rjust(1))      
+          print('')                                                                    
+          print('\033[1;32;40m####################################[Copyright Reserved by 梁策]###########################################################\033[0m')
+
+
+class dbmg(object):
+      def getsinfo(self):
+          self.bhost = input("请输入源库ip: ")
+          strbport = input("请输入源库端口: ")
+          self.bport = int(strbport)
+          self.buser = input("请输入用户名: ")
+          self.bpassword = input("请输入密码: ")
+          self.bdatabase1 = input("请输入数据库名1: ")
+          self.bdatabase2 = input("请输入数据库名2: ")
+          self.bdatabase3 = input("请输入数据库名3: ")
+
+          
+
+
+      def backup(self):
+          os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ../miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ../migdata >> ../miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
+          #os.system("./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd}  -L ../miglog/migdumper_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ../migdata".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword))     
+      def getminfo(self):
+          self.rhost = input("请输入目的库ip: ")
+          strrport = input("请输入目的库端口: ")
+          self.rport = int(strrport)
+          self.ruser = input("请输入用户名: ")
+          self.rpassword = input("请输入密码: ")
+
+
+      def restore(self):
+          os.system("nohup ./migload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ../migdata >> ../miglog/migrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
+      
+      def syn(self):
+          os.system("nohup ./migsyn  --log-file ../miglog/migsyn.log  -config ../migetc/migsyn.conf > /dev/null 2>&1 &")
+          #os.system("nohup $(pwd)/bin/syncer  --log-file ../miglog/migsyn.log  -config ../migetc/migsyn.conf > /dev/null 2>&1 &")
+
+
+      def readlog(self):
+          with open("../miglog/migsyn.log","r") as f:
+               context = f.readlines()
+               return context
+                
+      def get_binlog(self):
+          with open("../migdata/metadata","r") as f:
+               context = f.readlines()
+               return context
+      
+
+
+
+      def diff(self):
+          os.system("nohup ./migsync_diff   --config  ../migetc/migdiff.conf > ../miglog/mig_diff_report.log 2>&1 &")
+         #os.system("nohup $(pwd)/bin/sync_diff_inspector   --config  ../migetc/migdiff.conf > ../miglog/mig_diff_report.log 2>&1 &")
+         #os.system("nohup sync_diff_inspector --config /u03/tidbtools/bin/diff_config2.toml > diff_report.log 2>&1 &")
+
+
+
+
+      def difflog(self):
+          with open("../miglog/mig_diff_report.log","r") as f:
+               context = f.readlines()
+               return context
+
+      def stopsyn(self):
+          os.system("kill -9 `lsof -t -i:8271` > /dev/null 2>&1 &")
+
+
+          
+
+         
+
+
+def main():
+    jys_print()
+    try:
+         if os.path.isdir('../miglog'):
+             pass
+         else:
+             os.mkdir('../miglog')
+         if os.path.isdir('../migetc'):
+             pass
+         else:  
+             os.mkdir('../migetc')
+         if os.path.isdir('../migdata'):
+             pass
+         else:
+             os.mkdir('../migdata')
+         if os.path.isfile('../migetc/migsyn.conf'):
+             pass
+         else:
+            os.system("cp ./migsyn.conf ../migetc")
+
+         if os.path.isfile('../migetc/migdiff.conf'):
+            pass
+         else:
+            os.system("cp ./migdiff.conf ../migetc")
+
+         if os.path.isfile('../migetc/migsyn.meta'):
+            pass
+         else:
+            os.system("cp ./migsyn.meta ../migetc")
+       
+    except:
+         print('目录已经存在')
+    dbmig = dbmg()
+    while True:
+       try:
+         action = int(input("请输入选择项: "))
+         if action == 1:
+                dbmig.getsinfo()
+                print("开始备份")
+                dbmig.backup()
+                print("源库后台备份")
+  
+         elif action == 2:
+                dbmig.getminfo()
+                print("开始还原")
+                dbmig.restore()
+                print("目标库后台还原")
+
+
+         elif action == 3:
+                dbmig.diff()
+                print("校验数据开始")
+
+
+
+
+         elif action == 4:
+                dbmig.stopsyn()
+                dbmig.syn() 
+                print("数据开始同步")
+         
+         elif action == 5:
+                context = dbmig.readlog()
+                for i in range(len(context)):      
+                      print(context[i], end='\t')
+#                     print(context)
+              
+         elif action == 6:
+                context = dbmig.difflog()
+                for i in range(len(context)):
+                      print(context[i], end='\t')
+#                     print(context)
+         
+         elif action == 7:
+                dbmig.stopsyn()
+                print('实时增量同步已经停止')
+
+         elif action == 8:
+                context = dbmig.get_binlog()
+                for i in range(len(context)):
+                      print(context[i], end='\t')
+        
+
+         elif action == 0:
+                jys_print()
+
+         elif action == 100:
+                break        
+         else:
+                print("输入错误，请重新输入")
+       except:
+             print("输入错误，请返回主菜单!!")
+    
+if __name__=="__main__":
+     main()
+
+    
