@@ -10,7 +10,12 @@ class dbmg(object):
           if not bhost:
               bhost = (input("请输入源库地址：")).strip()
           if not bport:
-              bport = int(input("请输入源库端口："))     
+              while True:
+                  try:
+                        bport = int(input("请输入源库端口："))
+                        break
+                  except:
+                        print("请输入数字格式")
           if not buser:
               buser = (input("请输入迁移账号：")).strip()
           if not bpassword:
@@ -37,20 +42,24 @@ class dbmg(object):
           self.rpassword = rpassword
 
       def checkmysql(self):
-          #print(self.bhost)
-          #print(self.bport)
-          #print(self.buser)
-          #print(self.bpassword)
-          conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword,db=self.bdatabase1)
+          try:
+              conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
+          except:
+              print("源库连接信息错误，退回重填！")
           cur  = conn.cursor()
-          sql = "select * from usertb"
+          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'%s\';"%self.bdatabase1
           results = cur.execute(sql)
-          #aa = cur.fetchmany(results)
+          if not results:
+               print('查无此库')
+          data = cur.fetchmany(results)
           cur.close()
           conn.commit()
           conn.close()
-          print(results)
-          #for data in aa:
-          #     print(data)
+          for row in data:
+             row = row[0] 
+             print(row)
+             print(self.bdatabase1)
+             if row == self.bdatabase1:
+                  print('源库名正确')
 test = dbmg()
 test.checkmysql()
