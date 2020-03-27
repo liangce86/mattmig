@@ -2,6 +2,7 @@
 #coding:utf8
 #author:liangce
 import os,re,sys,datetime
+import MySQLdb
 
 class dbmg(object):
       def dbsinfo(self,bhost,bport,buser,bpassword,bdatabase1,bdatabase2,bdatabase3):
@@ -18,6 +19,12 @@ class dbmg(object):
           self.rport=rport
           self.ruser=ruser
           self.rpassword = rpassword
+
+      def checkmysql(self):
+          conn = MySQLdb.connect(host='192.168.0.82',user='ccc',passwd='jys#123')
+          cur  = conn.cursor()
+          databases = cur.execute("show databaes")
+     
 
       def backup(self):
           os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./migdata >> ./miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
@@ -93,22 +100,22 @@ def menu_print():
 
           
 def bkdb():
-          bhost = input("请输入源库ip: ")
+          bhost = (input("请输入源库ip: ")).strip()
           bport = int(input("请输入源库端口: "))
-          buser = input("请输入用户名: ")
-          bpassword = input("请输入密码: ")
-          bdatabase1 = input("请输入数据库名1: ")
-          bdatabase2 = input("请输入数据库名2: ")
-          bdatabase3 = input("请输入数据库名3: ")
+          buser = (input("请输入用户名: ")).strip()
+          bpassword = (input("请输入密码: ")).strip()
+          bdatabase1 = (input("请输入数据库名1: ")).strip()
+          bdatabase2 = (input("请输入数据库名2: ")).strip()
+          bdatabase3 = (input("请输入数据库名3: ")).strip()
           dbmig = dbmg()
           dbmig.dbsinfo(bhost,bport,buser,bpassword,bdatabase1,bdatabase2,bdatabase3)
           dbmig.backup()  
 
 def rsdb():
-          rhost = input("请输入目的库ip: ")
+          rhost = (input("请输入目的库ip: ")).strip()
           rport = int(input("请输入目的库端口: "))
-          ruser = input("请输入用户名: ")
-          rpassword = input("请输入密码: ")
+          ruser = (input("请输入用户名: ")).strip()
+          rpassword = (input("请输入密码: ")).strip()
           dbmig = dbmg()          
           dbmig.dbrinfo(rhost,rport,ruser,rpassword)
           dbmig.restore()
@@ -150,7 +157,7 @@ def mulu():
 
 def menu():
     while True:
-       try:
+       #try:
          action = int(input("请输入选择项: "))
          if action == 1:
                 bkdb()
@@ -188,6 +195,7 @@ def menu():
                 print('实时增量同步已经停止')
 
          elif action == 8:
+                dbmig = dbmg()
                 context = dbmig.get_binlog()
                 for i in range(len(context)):
                       print(context[i], end='\t')
@@ -200,8 +208,8 @@ def menu():
                 break
          else:
                 print("有错误，请重新输入")
-       except:
-             print("输入错误，请返回主菜单!!")
+       #except:
+           #  print("输入错误，请返回主菜单!!")
      
 
 
