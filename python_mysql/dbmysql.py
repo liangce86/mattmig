@@ -46,8 +46,9 @@ class dbmg(object):
               conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
           except:
               print("源库连接信息错误，退回重填！")
+              pass
           cur  = conn.cursor()
-          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'%s\';"%self.bdatabase1
+          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'{db}\';".format(db=self.bdatabase1)
           results = cur.execute(sql)
           if not results:
                print('查无此库')
