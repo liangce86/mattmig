@@ -1,0 +1,314 @@
+#!/usr/bin/env python
+#coding:utf8
+#author:liangce
+import os,re,sys,datetime
+import MySQLdb,time
+from getpass import getpass
+db_bk = 0
+class matt(object):
+      db1_check = 0
+      #db_bk = 0
+
+      def dbsinfo(self,bhost='',bport='',buser='',bpassword='',bdatabase1='',bdatabase2='',bdatabase3=''):
+          if not bhost:
+              bhost = (input("请输入源库地址：")).strip()
+          if not bport:
+              while True:
+                  try:
+                        bport = int(input("请输入源库端口："))
+                        break
+                  except:
+                        print("请输入数字格式")
+          if not buser:
+              buser = (input("请输入迁移账号：")).strip()
+          if not bpassword:
+              bpassword = getpass("请输入迁移账号密码: ")
+          self.bhost = bhost
+          self.bport = bport
+          self.buser = buser
+          self.bpassword = bpassword
+
+          if not bdatabase1:
+              while True:
+                   global db1_check
+                   global db_bk
+                   bdatabase1 = (input("请输入迁移库名1: ")).strip()
+                   self.bdatabase1 = bdatabase1
+                   database = self.bdatabase1
+                   self.checkdb(database)
+                   if db1_check == 1:
+                        #print(db1_check)
+                        break
+                   else:
+                        try: 
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
+
+                   
+          if not bdatabase2:
+              while True:
+                   global db1_check1
+                   global db_bk
+                   bdatabase2 = (input("请输入迁移库名2: ")).strip()
+                   self.bdatabase2 = bdatabase2
+                   database = self.bdatabase2
+                   self.checkdb(database)
+                   if db1_check == 1:
+                        break
+                   else:
+                        try:
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
+
+          if not bdatabase3:
+              while True:
+                   global  db1_check1
+                   global  db_bk
+                   bdatabase3 = (input("请输入迁移库名3: ")).strip()
+                   self.bdatabase3 = bdatabase3
+                   database = self.bdatabase3
+                   self.checkdb(database)
+                   if db1_check == 1:
+                        break
+                   else:
+                        try:
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
+
+
+
+
+    
+      def dbrinfo(self,rhost,rport,ruser,rpassword):
+          rhost = (input("请输入目的库ip: ")).strip()
+          rport = int(input("请输入目的库端口: "))
+          ruser = (input("请输入用户名: ")).strip()
+          rpassword = (input("请输入密码: ")).strip()
+
+          self.rhost=rhost
+          self.rport=rport
+          self.ruser=ruser
+          self.rpassword = rpassword
+      
+      def checkdb(self,database):
+          global db1_check
+          global db_bk
+          try:
+              conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
+          except:
+              print("源库连接信息错误，退回重填！")
+          cur  = conn.cursor()
+          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'{db}\';".format(db=database)
+          results = cur.execute(sql)
+          if not results:
+               db1_check = 0
+               print('查无此库,请重新输入,如忽略此项请输入"1"')
+               #nodb = int(input('如果忽略此选项，请输入"1": '))
+               #if nodb == 1:
+               #   pass
+          else:
+               db1_check = 1
+               db_bk = 1
+               data = cur.fetchmany(results)
+               cur.close()
+               conn.commit()
+               conn.close()
+               for row in data:
+                   row = row[0]
+                   if row == database:
+                        print('源库名正确')
+
+      def backup(self):
+             print("源库后台备份")     
+             os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./migdata >> ./miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
+
+      def restore(self):
+          os.system("nohup ./migload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ./migdata >> ./miglog/migrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
+      
+      def syn(self):
+          os.system("nohup ./migsyn  --log-file ./miglog/migsyn.log  -config ./migetc/migsyn.conf > /dev/null 2>&1 &")
+
+
+      def readlog(self):
+          with open("./miglog/migsyn.log","r") as f:
+               context = f.readlines()
+               return context
+                
+      def get_binlog(self):
+          with open("./migdata/metadata","r") as f:
+               context = f.readlines()
+               return context
+
+
+      def diff(self):
+          os.system("nohup ./migsync_diff   --config  ./migetc/migdiff.conf > ./miglog/mig_diff_report.log 2>&1 &")
+
+
+      def difflog(self):
+          with open("./miglog/mig_diff_report.log","r") as f:
+               context = f.readlines()
+               return context
+
+      def stopsyn(self):
+          os.system("kill -9 `lsof -t -i:8271` > /dev/null 2>&1 &")
+
+
+      
+      def mulu(self):
+         try:
+             if os.path.isdir('./miglog'):
+                 pass
+             else:
+                 os.mkdir('./miglog')
+             if os.path.isdir('./migetc'):
+                 pass
+             else:
+                 os.mkdir('./migetc')
+             if os.path.isdir('./migdata'):
+                 pass
+             else:
+                 os.mkdir('./migdata')
+             if os.path.isfile('./migetc/migsyn.conf'):
+                 pass
+             else:
+                 os.system("cp ./migsyn.conf ./migetc")
+
+             if os.path.isfile('./migetc/migdiff.conf'):
+                 pass
+             else:
+                 os.system("cp ./migdiff.conf ./migetc")
+
+             if os.path.isfile('./migetc/migsyn.meta'):
+                 pass
+             else:
+                 os.system("cp ./migsyn.meta ./migetc")
+
+         except:
+             print('目录已经存在')
+         
+
+def menu():
+        global db_bk
+        while True:
+                #try:
+                        mattmig = matt()
+                        action = int(input("请输入选择项: "))
+                        if action == 1:
+                               mattmig.dbsinfo()
+                               if db_bk == 1: 
+                                  mattmig.backup()
+                               else:
+                                  print('用户忽略备份，返回主菜单')
+                                  menu_print()
+
+                        elif action == 2:
+                               rsdb()
+                               print("目标库后台还原")
+
+
+                        elif action == 3:
+                               mattmig.diff()
+                               print("校验数据开始")
+
+
+
+
+                        elif action == 4:
+                               mattmig.stopsyn()
+                               mattmig.syn()
+                               print("数据开始同步")
+
+                        elif action == 5:
+                               context = mattmig.readlog()
+                               for i in range(len(context)):
+                                     print(context[i], end='\t')
+
+                        elif action == 6:
+                               context = mattmig.difflog()
+                               for i in range(len(context)):
+                                     print(context[i], end='\t')
+
+                        elif action == 7:
+                               mattmig.stopsyn()
+                               print('实时增量同步已经停止')
+
+                        elif action == 8:
+                               #mattmig = matt()
+                               context = mattmig.get_binlog()
+                               for i in range(len(context)):
+                                      print(context[i], end='\t')
+
+
+                        elif action == 0:
+                               menu_print()
+
+                        elif action == 100:
+                               break
+                        else:
+                               print("有错误，请重新输入")
+                #except:
+                              #print("输入错误，请返回主菜单!!")
+
+
+
+def menu_print():
+                print("\033[1;32;40m###################################################[mattmigv2.0控制台(mysql)]################################################\033[34m")
+                print('mattmig介绍')
+                print('mattmig是一款利用binlog日志同步mysql数据库数据的软件，支持myisam、innodb引擎，实时同步业务数据库表数据')
+                print('')
+                menu = '0:返回主菜单'
+                print(menu.rjust(1))
+                print('')
+                dbbk = '1:全库备份'
+                print(dbbk.rjust(1))
+                print('')
+                dbrestore = '2:全库还原'
+                print(dbrestore.rjust(1))
+                print('')
+                check = '3:校验数据'
+                print(check.rjust(1))
+                print('')
+                incre = '4:增量数据同步'
+                print(incre.rjust(1))
+                print('')
+                vclog = '5:查看同步日志'
+                print(vclog.rjust(1))
+                print('')
+                chlog = '6:查看校验日志'
+                print(chlog.rjust(1))
+                print('')
+                stopsyn = '7:停止增量同步。'
+                print(stopsyn.rjust(1))
+                print('')
+                logdir =  '8:查看源库biglog信息。'
+                print(logdir.rjust(1))
+                print('')
+                logout = '100:退出'
+                print(logout.rjust(1))
+                print('')
+                print('\033[1;32;40m####################################[Copyright Reserved by 梁策]###########################################################\033[0m')
+
+def main():
+     menu_print()
+     menu()
+     
+    
+    
+if __name__=="__main__":
+     main()
+    
