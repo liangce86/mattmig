@@ -4,9 +4,10 @@
 import os,re,sys,datetime
 import MySQLdb,time
 from getpass import getpass
-
+db_bk = 0
 class dbmg(object):
       db1_check = 0
+      #db_bk = 0
 
       def dbsinfo(self,bhost='',bport='',buser='',bpassword='',bdatabase1='',bdatabase2='',bdatabase3=''):
           if not bhost:
@@ -30,26 +31,65 @@ class dbmg(object):
           if not bdatabase1:
               while True:
                    global db1_check
+                   global db_bk
                    bdatabase1 = (input("请输入迁移库名1: ")).strip()
-                   #dbmg.checkdb1(self)
                    self.bdatabase1 = bdatabase1
-                   self.checkdb1()
+                   database = self.bdatabase1
+                   self.checkdb(database)
                    if db1_check == 1:
-                        print(db1_check)
+                        #print(db1_check)
                         break
+                   else:
+                        try: 
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
+
                    
           if not bdatabase2:
-              bdatabase2 = (input("请输入迁移库名2: ")).strip()
-          if not bdatabase3:
-              bdatabase3 = (input("请输入迁移库名3: ")).strip()
+              while True:
+                   global db1_check1
+                   global db_bk
+                   bdatabase2 = (input("请输入迁移库名2: ")).strip()
+                   self.bdatabase2 = bdatabase2
+                   database = self.bdatabase2
+                   self.checkdb(database)
+                   if db1_check == 1:
+                        break
+                   else:
+                        try:
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
 
-          #self.bhost = bhost
-          #self.bport = bport
-          #self.buser = buser
-          #self.bpassword = bpassword
-          #self.bdatabase1 = bdatabase1
-          self.bdatabase2 = bdatabase2
-          self.bdatabase3 = bdatabase3
+          if not bdatabase3:
+              while True:
+                   global  db1_check1
+                   global  db_bk
+                   bdatabase3 = (input("请输入迁移库名3: ")).strip()
+                   self.bdatabase3 = bdatabase3
+                   database = self.bdatabase3
+                   self.checkdb(database)
+                   if db1_check == 1:
+                        break
+                   else:
+                        try:
+                             nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
+                             if nodb == 1:
+                                 break
+                             elif nodb == 2:
+                                 pass
+                        except:
+                             print("输入错误")
+
 
 
 
@@ -65,33 +105,37 @@ class dbmg(object):
           self.ruser=ruser
           self.rpassword = rpassword
       
-      def checkdb1(self):
+      def checkdb(self,database):
           global db1_check
+          global db_bk
           try:
               conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
           except:
               print("源库连接信息错误，退回重填！")
           cur  = conn.cursor()
-          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'{db}\';".format(db=self.bdatabase1)
+          sql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=\'{db}\';".format(db=database)
           results = cur.execute(sql)
           if not results:
                db1_check = 0
-               print('查无此库,请重新输入')
+               print('查无此库,请重新输入,如忽略此项请输入"1"')
+               #nodb = int(input('如果忽略此选项，请输入"1": '))
+               #if nodb == 1:
+               #   pass
           else:
                db1_check = 1
+               db_bk = 1
                data = cur.fetchmany(results)
                cur.close()
                conn.commit()
                conn.close()
                for row in data:
                    row = row[0]
-                   if row == self.bdatabase1:
+                   if row == database:
                         print('源库名正确')
 
       def backup(self):
-          print("源库后台备份")     
-          os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./migdata >> ./miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
-      
+             print("源库后台备份")     
+             os.system("nohup ./migdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./miglog/migdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./migdata >> ./miglog/mig.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
 
       def restore(self):
           os.system("nohup ./migload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ./migdata >> ./miglog/migrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
@@ -159,17 +203,18 @@ class dbmg(object):
          
 
 def menu():
+        global db_bk
         while True:
                 #try:
                         dbmig = dbmg()
                         action = int(input("请输入选择项: "))
                         if action == 1:
                                dbmig.dbsinfo()
-                               dbmig.checkdb1()
-                               if db1_check == 1:
-                                    dbmig.backup()
+                               if db_bk == 1: 
+                                  dbmig.backup()
                                else:
-                                    menu_print()
+                                  print('用户忽略备份，返回主菜单')
+                                  menu_print()
 
                         elif action == 2:
                                rsdb()
