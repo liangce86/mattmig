@@ -5,6 +5,7 @@ import os,re,sys,datetime
 import MySQLdb,time
 from getpass import getpass
 db_bk = 0
+rdb_check = 0
 class matt(object):
       db1_check = 0
       #db_bk = 0
@@ -94,16 +95,25 @@ class matt(object):
 
 
     
-      def dbrinfo(self,rhost,rport,ruser,rpassword):
-          rhost = (input("请输入目的库ip: ")).strip()
-          rport = int(input("请输入目的库端口: "))
-          ruser = (input("请输入用户名: ")).strip()
-          rpassword = (input("请输入密码: ")).strip()
-
+      def dbrinfo(self,rhost='',rport='',ruser='',rpassword=''):
+          if not rhost:
+              rhost = (input("请输入目的库地址：")).strip()
+          if not rport:
+              while True:
+                  try:
+                        rport = int(input("请输入目的库端口："))
+                        break
+                  except:
+                        print("请输入数字格式")
+          if not ruser:
+              ruser = (input("请输入账号：")).strip()
+          if not rpassword:
+              rpassword = getpass("请输入密码: ")
           self.rhost=rhost
           self.rport=rport
           self.ruser=ruser
           self.rpassword = rpassword
+          self.check_rdb()
       
       def checkdb(self,database):
           global db1_check
@@ -132,6 +142,22 @@ class matt(object):
                    row = row[0]
                    if row == database:
                         print('源库名正确')
+      
+      def check_rdb(self):
+              global rdb_check
+              try:
+                conn = MySQLdb.connect(host=self.rhost,port=self.rport,user=self.ruser,passwd=self.rpassword)
+                if conn:
+                   rdb_check = 1
+                   print(rdb_check)
+                   pass
+                else:
+                   rdb_check = 0
+                   print("目标库连接信息错误，退回重填！")
+              except:
+                   print("目标库连接信息错误，退回重填！")
+
+
 
       def backup(self):
              print("源库后台备份")     
@@ -217,8 +243,12 @@ def menu():
                                   menu_print()
 
                         elif action == 2:
-                               rsdb()
-                               print("目标库后台还原")
+                               mattmig.dbrinfo()
+                               if rdb_check == 1: 
+                                  print("目标库后台还原")
+                               else:
+                                  print("目标库连接错误，返回主菜单")
+                                  menu_print()
 
 
                         elif action == 3:
