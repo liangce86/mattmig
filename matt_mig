@@ -212,18 +212,21 @@ def mulu():
              if os.path.isfile('./mattetc/mattsyn.conf'):
                  pass
              else:
-                 os.system("cp ./mattsyn.conf ./mattetc")
+                 with open('./mattetc/mattsyn.conf','w+') as fetc:
+                      fetc.writelines(['log-level = "info"\n', 'log-file = "mattsyn.log"\n', 'log-rotate = "day"\n', '\n', 'server-id = 300 \n', '\n', '## binlog起始信息文件地址\n', 'meta = "../mattetc/mattsyn.meta"\n', 'worker-count = 16\n', 'batch = 100\n', 'flavor = "mysql"\n', '\n', '#status-addr = ":8271"\n', '\n', 'stop-on-ddl = false\n', '\n', 'max-retry = 100\n', '\n', '# timezone = "Asia/Shanghai"\n', '\n', 'skip-ddls = ["ALTER USER", "CREATE TABLE", "DROP TABLE"]\n', '\n', '\n', '\n', '\n', '#replicate-do-db = ["~^b.*","s1"]\n', '\n', '\n', '#replicate-ignore-db = ["~^b.*","s1"]\n', '\n', '\n', '\n', '# [[skip-dmls]]\n', '# db-name = "foo"\n', '# tbl-name = "bar"\n', '# type = "delete"\n', '#\n', '\n', '# [[skip-dmls]]\n', '# type = "delete"\n', '#\n', '\n', '# [[skip-dmls]]\n', '# db-name = "foo"\n', '# type = "delete"\n', '\n', '\n', '\n', '#[[replicate-do-table]]\n', '#db-name ="dbname"\n', '#tbl-name = "table-name"\n', '\n', '#[[replicate-do-table]]\n', '#db-name ="dbname1"\n', '#tbl-name = "table-name1"\n', '\n', '\n', '#[[replicate-do-table]]\n', '#db-name ="test"\n', '#tbl-name = "~^a.*"\n', '\n', '\n', '#[[replicate-ignore-table]]\n', '#db-name = "your_db"\n', '#tbl-name = "your_table"\n', '\n', '\n', '#[[replicate-ignore-table]]\n', '#db-name ="test"\n', '#tbl-name = "~^a.*"\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n', '#[[route-rules]]\n', '#pattern-schema = "route_*"\n', '#pattern-table = "abc_*"\n', '#target-schema = "route"\n', '#target-table = "abc"\n', '\n', '#[[route-rules]]\n', '#pattern-schema = "route_*"\n', '#pattern-table = "xyz_*"\n', '#target-schema = "route"\n', '#target-table = "xyz"\n', '############################################################\n', '[from]\n', 'host = "192.168.0.82"\n', 'user = "ccc"\n', 'password = "jys#123"\n', 'port = 3306\n', '\n', '[to]\n', 'host = "192.168.0.101"\n', 'user = "root"\n', 'password = "jys#12345678"\n', 'port = 3306\n', '\n', '#############################################################\n'])
 
              if os.path.isfile('./mattetc/mattdiff.conf'):
                  pass
              else:
-                 os.system("cp ./mattdiff.conf ./mattetc")
+                 with open('./mattetc/mattdiff.conf','w+') as f:
+                        f.writelines(['# mattDiff Configuration.\n', '\n', '######################### Global config #########################\n', '\n', '# 日志级别，可以设置为 info、debug\n', 'log-level = "info"\n', '\n', '# 对每一个 chunk 的数据进行对比。使用 chunk-size 设置 chunk 的大小\n', 'chunk-size = 100000\n', '\n', '# 检查数据的线程数量\n', 'check-thread-count = 4\n', '\n', '# 抽样检查的比例，如果设置为 100 则检查全部数据\n', 'sample-percent = 20 \n', '\n', '# 通过计算 chunk 的 checksum 来对比数据，如果不开启则逐行对比数据\n', 'use-checksum = true\n', '\n', '# 如果设置为 true 则只会通过计算 checksum 来校验数据，如果上下游的 checksum 不一致也不会查出数据再进行校验\n', 'only-use-checksum = false\n', '\n', '# 是否使用上次校验的 checkpoint，如果开启，则只校验上次未校验以及校验失败的 chunk\n', 'use-checkpoint = false\n', '\n', '# 不对比数据\n', 'ignore-data-check = false\n', '\n', '# 不对比表结构\n', 'ignore-struct-check = false\n', '\n', '\n', '######################### Tables config #########################\n', '\n', '\n', '# 配置需要对比的*目标数据库*中的表\n', '[[check-tables]]\n', '    # 目标库中数据库的名称\n', '       schema = "bainian"\n', "       schema = 'mmm'\n", '\n', '    # 需要检查的表\n', '    # tables = ["usertb",]\n', '\n', '    # 支持使用正则表达式配置检查的表，需要以‘~’开始，\n', '    # 下面的配置会检查所有表名以‘test’为前缀的表\n', '    # tables = ["~^test.*"]\n', '    # 下面的配置会检查配置库中所有的表\n', '      tables = ["~^"]\n', '\n', '\n', '\n', '######################### Databases config #########################\n', '\n', '# 源数据库实例的配置\n', '[[source-db]]\n', '    host = "192.168.0.82"\n', '    port = 3306\n', '    user = "root"\n', '    password = "jys#123"\n', '    # 源数据库实例的 id，唯一标识一个数据库实例\n', '    instance-id = "node2"\n', '\n', '# 目标数据库实例的配置\n', '[target-db]\n', '    host = "192.168.0.101"\n', '    port = 3306\n', '    user = "root"\n', '    password = "jys#12345678"\n']
+)
 
              if os.path.isfile('./mattetc/mattsyn.meta'):
                  pass
              else:
-                 os.system("cp ./mattsyn.meta ./mattetc")
-
+                 with open('./mattetc/mattsyn.meta','w+') as synmeta:
+                        synmeta.writelines(['binlog-name = ""\n', 'binlog-pos = 4\n', 'binlog-gtid = ""\n'])
          except:
              print('目录已经存在')
          
@@ -298,8 +301,8 @@ def menu():
 
 def menu_print():
                 print("\033[1;32;40m###################################################[mattmattv2.0控制台(mysql)]################################################\033[34m")
-                print('mattmatt介绍')
-                print('mattmatt是一款利用binlog日志同步mysql数据库数据的软件，支持myisam、innodb引擎，实时同步业务数据库表数据')
+                print('mattmig介绍')
+                print('mattmig是一款利用binlog日志同步mysql数据库数据的软件，支持myisam、innodb引擎，实时同步业务数据库表数据')
                 print('')
                 menu = '0:返回主菜单'
                 print(menu.rjust(1))
