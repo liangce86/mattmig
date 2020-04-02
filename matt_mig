@@ -322,9 +322,23 @@ class matt(object):
           print('请输入binlog信息:')
           binlogname = (input('请输入binlog-name: ')).strip()
           try:
-             bport = int(input("请输入binlog-pos："))
+             binlogpos = int(input("请输入binlog-pos："))
           except:
                  print("请输入数字格式")
+
+          binlog_file = open('./mattetc/mattsyn.meta','r')
+          t = binlog_file.readlines()
+          binlog_file.close()
+          t[0]='binlog-name = "{binlog}"\n'.format(binlog = binlogname)
+          t[1]='binlog-pos = {pos}\n'.format(pos = binlogpos)
+          print(t[0])
+          print(t[1])
+          binlog_file = open('./mattetc/mattsyn.meta','w')
+          binlog_file.writelines(t)
+          binlog_file.close()
+
+
+
       def syndb(self):
           self.stdbconn()
           self.stdrconn()
