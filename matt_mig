@@ -202,19 +202,33 @@ class matt(object):
       def conn_db(self):
           self.dbsinfo()
           self.dbrinfo()
-          with open('./mattetc/mattdiff.conf','r') as conn_file:
-               t = conn_file.readlines()
-          t[38]="       schema = '{conndb}'\n".format(conndb = self.bdatabase1)
+          print('请选择要校验的库: 1:{codb1} 2:{codb2} 3:{codb3}'.format(codb1=self.bdatabase1,codb2=self.bdatabase2,codb3=self.bdatabase3))
+          choicedb = int(input('请输入要校验的库,请选择输入数字: '))
+          if choicedb == 1:
+               select_db = self.bdatabase1
+          elif choicedb == 2:
+               select_db = self.bdatabase2
+          elif choicedb == 3:
+               select_db = self.bdatabase3
+          else:
+               print('输入错误，请在1、2、3 范围内选择')
 
-          print(self.rhost)
-          print(self.rport)
-          print(self.ruser)
-          print(self.rpassword)
-          print(self.bdatabase1)
-          print(self.bdatabase2)
-          print(self.bdatabase3)
-
-
+          conn_file = open('./mattetc/mattdiff.conf','r')
+          t = conn_file.readlines()
+          conn_file.close()
+          t[38]="       schema = '{conndb}'\n".format(conndb = select_db)
+          t[55]='    host = "{s_ip}"\n'.format(s_ip = self.bhost)
+          t[56]='    port = {s_port}\n'.format(s_port = self.bport)
+          t[57]='    user = "{s_root}"\n'.format(s_root = self.buser)
+          t[58]='    password = "{s_pass}"\n'.format(s_pass=self.bpassword)
+          t[64]='    host = "{r_ip}"\n'.format(r_ip = self.rhost)
+          t[65]='    port = {r_port}\n'.format(r_port = self.rport)
+          t[66]='    user = "{r_root}"\n'.format(r_root = self.ruser)
+          t[67]='    password = "{r_pass}"\n'.format(r_pass = self.rpassword)
+          connr_file = open('./mattetc/mattdiff.conf','w')
+          connr_file.writelines(t)
+          connr_file.close()
+               
 
       
 def mulu():
@@ -277,10 +291,10 @@ def menu():
 
 
                         elif action == 3:
-                               #mattmatt.diff()
                                print("请输入源库、目标库信息")
                                mattmatt.conn_db()
                                print("校验数据开始")
+                               mattmatt.diff()
 
 
 
