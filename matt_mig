@@ -312,11 +312,25 @@ class matt(object):
           syn_file.close()
 
 
+                   
+
+      def binloginfo(self):
+          print('查看源库binlog信息')
+          context = self.get_binlog()
+          for i in range(len(context)):
+               print(context[i], end='\t')
+          print('请输入binlog信息:')
+          binlogname = (input('请输入binlog-name: ')).strip()
+          try:
+             bport = int(input("请输入binlog-pos："))
+          except:
+                 print("请输入数字格式")
       def syndb(self):
           self.stdbconn()
           self.stdrconn()
-                   
-
+          self.binloginfo()
+ 
+          
       
 def mulu():
          try:
@@ -388,9 +402,9 @@ def menu():
 
                         elif action == 4:
                                mattmatt.syndb()
+                               print("数据开始同步")
                                #mattmatt.stopsyn()
                                #mattmatt.syn()
-                               print("数据开始同步")
 
                         elif action == 5:
                                context = mattmatt.readlog()
@@ -406,11 +420,11 @@ def menu():
                                mattmatt.stopsyn()
                                print('实时增量同步已经停止')
 
-                        elif action == 8:
-                               #mattmatt = matt()
-                               context = mattmatt.get_binlog()
-                               for i in range(len(context)):
-                                      print(context[i], end='\t')
+                        #elif action == 8:
+                        #       #mattmatt = matt()
+                        #       context = mattmatt.get_binlog()
+                        #       for i in range(len(context)):
+                        #              print(context[i], end='\t')
 
 
                         elif action == 0:
@@ -453,9 +467,9 @@ def menu_print():
                 print('')
                 stopsyn = '7:停止增量同步。'
                 print(stopsyn.rjust(1))
-                print('')
-                logdir =  '8:查看源库biglog信息。'
-                print(logdir.rjust(1))
+               # print('')
+               # logdir =  '8:查看源库biglog信息。'
+               # print(logdir.rjust(1))
                 print('')
                 logout = '100:退出'
                 print(logout.rjust(1))
