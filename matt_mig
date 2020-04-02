@@ -151,7 +151,7 @@ class matt(object):
                 conn = MySQLdb.connect(host=self.rhost,port=self.rport,user=self.ruser,passwd=self.rpassword)
                 if conn:
                    rdb_check = 1
-                   print(rdb_check)
+                   #print(rdb_check)
                    pass
                 else:
                    rdb_check = 0
@@ -224,9 +224,98 @@ class matt(object):
           connr_file = open('./mattetc/mattdiff.conf','w')
           connr_file.writelines(t)
           connr_file.close()
-       
+      
+      def stdbconn(self,bhost='',bport='',buser='',bpassword=''):
+          if not bhost:
+              bhost = (input("请输入源库地址：")).strip()
+          if not bport:
+              while True:
+                  try:
+                        bport = int(input("请输入源库端口："))
+                        break
+                  except:
+                        print("请输入数字格式")
+          if not buser:
+              buser = (input("请输入账号：")).strip()
+          if not bpassword:
+              bpassword = getpass("请输入密码: ")
+          self.bhost=bhost
+          self.bport=bport
+          self.buser=buser
+          self.bpassword = bpassword
+          try:
+                conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
+                if conn:
+                   #rdb_check = 1
+                   #print(rdb_check)
+                   print('源库信息正确') 
+                else:
+                   #rdb_check = 0
+                   print("源库连接信息错误，退回重填！")
+          except:
+                   print("源库连接信息错误，退回重填！")
+ 
+          syn_file = open('./mattetc/mattsyn.conf','r')
+          t = syn_file.readlines()
+          syn_file.close()
+          t[90]='host = "{shost}"\n'.format(shost = self.bhost)
+          t[91]='user = "{suser}"\n'.format(suser = self.buser)
+          t[92]='password = "{spasswd}"\n'.format(spasswd = self.bpassword)
+          t[93]='port = {sport}\n'.format(sport = self.bport)
+          syn_file = open('./mattetc/mattsyn.conf','w')
+          syn_file.writelines(t)
+          syn_file.close()
+
+
+
+
+ 
+      def stdrconn(self,rhost='',rport='',ruser='',rpassword=''):
+          if not rhost:
+              rhost = (input("请输入目的库地址：")).strip()
+          if not rport:
+              while True:
+                  try:
+                        rport = int(input("请输入目的库端口："))
+                        break
+                  except:
+                        print("请输入数字格式")
+          if not ruser:
+              ruser = (input("请输入账号：")).strip()
+          if not rpassword:
+              rpassword = getpass("请输入密码: ")
+          self.rhost=rhost
+          self.rport=rport
+          self.ruser=ruser
+          self.rpassword = rpassword
+          try:
+                conn = MySQLdb.connect(host=self.rhost,port=self.rport,user=self.ruser,passwd=self.rpassword)
+                if conn:
+                   #rdb_check = 1
+                   #print(rdb_check)
+                   print('目标库信息正确')
+                else:
+                   #rdb_check = 0
+                   print("目标库连接信息错误，退回重填！")
+          except:
+                   print("目标库连接信息错误，退回重填！")
+          
+          syn_file = open('./mattetc/mattsyn.conf','r')
+          t = syn_file.readlines()
+          syn_file.close()
+          t[96]='host = "{rhost}"\n'.format(rhost = self.rhost)
+          t[97]='user = "{ruser}"\n'.format(ruser = self.ruser)
+          t[98]='password = "{rpasswd}"\n'.format(rpasswd = self.rpassword)
+          t[99]='port = {rport}\n'.format(rport = self.rport)
+          syn_file = open('./mattetc/mattsyn.conf','w')
+          syn_file.writelines(t)
+          syn_file.close()
+
+
       def syndb(self):
-          pass         
+          self.stdbconn()
+          self.stdrconn()
+                   
 
       
 def mulu():
@@ -298,8 +387,9 @@ def menu():
 
 
                         elif action == 4:
-                               mattmatt.stopsyn()
-                               mattmatt.syn()
+                               mattmatt.syndb()
+                               #mattmatt.stopsyn()
+                               #mattmatt.syn()
                                print("数据开始同步")
 
                         elif action == 5:
