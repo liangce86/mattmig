@@ -38,7 +38,6 @@ class matt(object):
                    database = self.bdatabase1
                    self.checkdb(database)
                    if db1_check == 1:
-                        #print(db1_check)
                         self.bdatabase1 = database
                         break
                    else:
@@ -133,10 +132,7 @@ class matt(object):
           results = cur.execute(sql)
           if not results:
                db1_check = 0
-               print('查无此库,请重新输入,如忽略此项请输入"1"')
-               #nodb = int(input('如果忽略此选项，请输入"1": '))
-               #if nodb == 1:
-               #   pass
+               print('查无此库,请重新输入')
           else:
                db1_check = 1
                db_bk = 1
@@ -228,7 +224,9 @@ class matt(object):
           connr_file = open('./mattetc/mattdiff.conf','w')
           connr_file.writelines(t)
           connr_file.close()
-               
+       
+      def syndb(self):
+          pass         
 
       
 def mulu():
