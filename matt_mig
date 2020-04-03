@@ -44,7 +44,8 @@ class matt(object):
                         try: 
                              nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
                              if nodb == 1:
-                                 bdatabase1 = ''
+                                 #bdatabase1 = ''
+                                 self.bdatabase1 = "''"
                                  break
                              elif nodb == 2:
                                  pass
@@ -67,7 +68,7 @@ class matt(object):
                         try:
                              nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
                              if nodb == 1:
-                                 self.bdatabase2 = ''
+                                 self.bdatabase2 = "''"
                                  break
                              elif nodb == 2:
                                  pass
@@ -89,7 +90,7 @@ class matt(object):
                         try:
                              nodb = int(input('如果忽略此选项，请输入"1",继续输入库名请输入"2": '))
                              if nodb == 1:
-                                 self.bdatabase3 = ''
+                                 self.bdatabase3 = "''"
                                  break
                              elif nodb == 2:
                                  pass
@@ -162,9 +163,12 @@ class matt(object):
 
 
       def backup(self):
-             print("源库后台备份")     
+             print("源库后台备份以下数据库:")    
+             print(self.bdatabase1)
+             print(self.bdatabase2)
+             print(self.bdatabase3) 
              os.system("nohup ./mattdump -h {bhost} -P {bport} -u {buser} -p {bpwd} --regex=\"{bdatabase1}.*|{bdatabase2}.*|{bdatabase3}.*\" -L ./mattlog/mattdump_$(date \"+%Y%m%d%H%M%S\").log -v 3  -o ./mattdata >> ./mattlog/matt.log 2>&1 &".format(bhost=self.bhost,bport=self.bport,buser=self.buser,bpwd=self.bpassword,bdatabase1=self.bdatabase1,bdatabase2=self.bdatabase2,bdatabase3=self.bdatabase3))
-
+             
       def restore(self):
           os.system("nohup ./mattload -h {rhost}  -P {rport} -u {ruser} -p {rpwd} -o -v 3 -d  ./mattdata >> ./mattlog/mattrestore_$(date \"+%Y%m%d%H%M%S\").log  2>&1 &".format(rhost=self.rhost,rport=self.rport,ruser=self.ruser,rpwd=self.rpassword))
       
@@ -423,6 +427,7 @@ def menu():
                                else:
                                   print("目标库连接错误，返回主菜单")
                                   menu_print()
+                               mattmatt.restore()
 
 
                         elif action == 3:
