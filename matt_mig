@@ -437,8 +437,8 @@ def menu():
                         elif action == 4:
                                mattmatt.syndb()
                                print("数据开始同步")
-                               #mattmatt.stopsyn()
-                               #mattmatt.syn()
+                               mattmatt.stopsyn()
+                               mattmatt.syn()
 
                         elif action == 5:
                                context = mattmatt.readlog()
