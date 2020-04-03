@@ -315,10 +315,18 @@ class matt(object):
                    
 
       def binloginfo(self):
+        while True:
+          binlog_list = []
           print('查看源库binlog信息')
           context = self.get_binlog()
           for i in range(len(context)):
                print(context[i], end='\t')
+               k = context[i]
+               binlog_list.append(k)
+          binlog_2 = binlog_list[2]
+          binlog_3 = binlog_list[3]
+          binlog_2c = binlog_2[6:]
+          binlog_3c = binlog_3[6:]
           print('请输入binlog信息:')
           binlogname = (input('请输入binlog-name: ')).strip()
           try:
@@ -331,12 +339,24 @@ class matt(object):
           binlog_file.close()
           t[0]='binlog-name = "{binlog}"\n'.format(binlog = binlogname)
           t[1]='binlog-pos = {pos}\n'.format(pos = binlogpos)
-          print(t[0])
-          print(t[1])
+          #print(t[0])
+          #print(t[1])
           binlog_file = open('./mattetc/mattsyn.meta','w')
           binlog_file.writelines(t)
           binlog_file.close()
-
+          str_binlog2c = binlog_2c.strip()
+          int_binlog3c = int(binlog_3c)
+          #print(str_binlog2c)
+          #print(int_binlog3c)
+          #print(binlogname)
+          #print(binlogpos)
+             
+          if str_binlog2c == binlogname and int_binlog3c == binlogpos:
+                   print('binlog信息输入正确')
+                   break
+          else:
+                   print('binlog信息输入错误，请重新输入！')
+             
 
 
       def syndb(self):
