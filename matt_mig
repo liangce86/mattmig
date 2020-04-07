@@ -6,9 +6,10 @@ import MySQLdb,time
 from getpass import getpass
 db_bk = 0
 rdb_check = 0
+syn_status = 0
+synr_status = 0
 class matt(object):
       db1_check = 0
-      #db_bk = 0
 
       def dbsinfo(self,bhost='',bport='',buser='',bpassword='',bdatabase1='',bdatabase2='',bdatabase3=''):
           if not bhost:
@@ -159,6 +160,7 @@ class matt(object):
                    print("目标库连接信息错误，退回重填！")
               except:
                    print("目标库连接信息错误，退回重填！")
+                   menu_print()
 
 
 
@@ -200,36 +202,42 @@ class matt(object):
           os.system("kill -9 `lsof -t -i:8271` > /dev/null 2>&1 &")
  
       def conn_db(self):
+          global rdb_check
           self.dbsinfo()
           self.dbrinfo()
-          print('请选择要校验的库: 1:{codb1} 2:{codb2} 3:{codb3}'.format(codb1=self.bdatabase1,codb2=self.bdatabase2,codb3=self.bdatabase3))
-          choicedb = int(input('请输入要校验的库,请选择输入数字: '))
-          if choicedb == 1:
-               select_db = self.bdatabase1
-          elif choicedb == 2:
-               select_db = self.bdatabase2
-          elif choicedb == 3:
-               select_db = self.bdatabase3
-          else:
-               print('输入错误，请在1、2、3 范围内选择')
+          if rdb_check == 1:
+               print('请选择要校验的库: 1:{codb1} 2:{codb2} 3:{codb3}'.format(codb1=self.bdatabase1,codb2=self.bdatabase2,codb3=self.bdatabase3))
+               choicedb = int(input('请输入要校验的库,请选择输入数字: '))
+               if choicedb == 1:
+                    select_db = self.bdatabase1
+               elif choicedb == 2:
+                    select_db = self.bdatabase2
+               elif choicedb == 3:
+                    select_db = self.bdatabase3
+               else:
+                    print('输入错误，请在1、2、3 范围内选择')
 
-          conn_file = open('./mattetc/mattdiff.conf','r')
-          t = conn_file.readlines()
-          conn_file.close()
-          t[38]="       schema = '{conndb}'\n".format(conndb = select_db)
-          t[55]='    host = "{s_ip}"\n'.format(s_ip = self.bhost)
-          t[56]='    port = {s_port}\n'.format(s_port = self.bport)
-          t[57]='    user = "{s_root}"\n'.format(s_root = self.buser)
-          t[58]='    password = "{s_pass}"\n'.format(s_pass=self.bpassword)
-          t[64]='    host = "{r_ip}"\n'.format(r_ip = self.rhost)
-          t[65]='    port = {r_port}\n'.format(r_port = self.rport)
-          t[66]='    user = "{r_root}"\n'.format(r_root = self.ruser)
-          t[67]='    password = "{r_pass}"\n'.format(r_pass = self.rpassword)
-          connr_file = open('./mattetc/mattdiff.conf','w')
-          connr_file.writelines(t)
-          connr_file.close()
+               conn_file = open('./mattetc/mattdiff.conf','r')
+               t = conn_file.readlines()
+               conn_file.close()
+               t[38]="       schema = '{conndb}'\n".format(conndb = select_db)
+               t[55]='    host = "{s_ip}"\n'.format(s_ip = self.bhost)
+               t[56]='    port = {s_port}\n'.format(s_port = self.bport)
+               t[57]='    user = "{s_root}"\n'.format(s_root = self.buser)
+               t[58]='    password = "{s_pass}"\n'.format(s_pass=self.bpassword)
+               t[64]='    host = "{r_ip}"\n'.format(r_ip = self.rhost)
+               t[65]='    port = {r_port}\n'.format(r_port = self.rport)
+               t[66]='    user = "{r_root}"\n'.format(r_root = self.ruser)
+               t[67]='    password = "{r_pass}"\n'.format(r_pass = self.rpassword)
+               connr_file = open('./mattetc/mattdiff.conf','w')
+               connr_file.writelines(t)
+               connr_file.close()
+               print("校验数据开始")
+          else:
+               pass
       
       def stdbconn(self,bhost='',bport='',buser='',bpassword=''):
+          global syn_status
           if not bhost:
               bhost = (input("请输入源库地址：")).strip()
           if not bport:
@@ -250,11 +258,9 @@ class matt(object):
           try:
                 conn = MySQLdb.connect(host=self.bhost,port=self.bport,user=self.buser,passwd=self.bpassword)
                 if conn:
-                   #rdb_check = 1
-                   #print(rdb_check)
+                   syn_status = 1
                    print('源库信息正确') 
                 else:
-                   #rdb_check = 0
                    print("源库连接信息错误，退回重填！")
           except:
                    print("源库连接信息错误，退回重填！")
@@ -272,9 +278,9 @@ class matt(object):
 
 
 
-
  
       def stdrconn(self,rhost='',rport='',ruser='',rpassword=''):
+          global synr_status
           if not rhost:
               rhost = (input("请输入目的库地址：")).strip()
           if not rport:
@@ -295,11 +301,9 @@ class matt(object):
           try:
                 conn = MySQLdb.connect(host=self.rhost,port=self.rport,user=self.ruser,passwd=self.rpassword)
                 if conn:
-                   #rdb_check = 1
-                   #print(rdb_check)
+                   synr_status = 1
                    print('目标库信息正确')
                 else:
-                   #rdb_check = 0
                    print("目标库连接信息错误，退回重填！")
           except:
                    print("目标库连接信息错误，退回重填！")
@@ -364,10 +368,17 @@ class matt(object):
 
 
       def syndb(self):
+          global syn_status
+          global synr_status
           self.stdbconn()
-          self.stdrconn()
-          self.binloginfo()
- 
+          if syn_status == 1:
+               self.stdrconn()
+               if synr_status == 1:
+                  self.binloginfo()
+                  print("数据开始同步")
+          else:
+               pass
+   
           
       
 def mulu():
@@ -409,7 +420,7 @@ def mulu():
 def menu():
         global db_bk
         while True:
-                #try:
+                try:
                         mattmatt = matt()
                         action = int(input("请输入选择项: "))
                         if action == 1:
@@ -433,7 +444,7 @@ def menu():
                         elif action == 3:
                                print("请输入源库、目标库信息")
                                mattmatt.conn_db()
-                               print("校验数据开始")
+                               #print("校验数据开始")
                                mattmatt.diff()
 
 
@@ -441,7 +452,7 @@ def menu():
 
                         elif action == 4:
                                mattmatt.syndb()
-                               print("数据开始同步")
+                               #print("数据开始同步")
                                mattmatt.stopsyn()
                                mattmatt.syn()
 
@@ -473,8 +484,8 @@ def menu():
                                break
                         else:
                                print("有错误，请重新输入")
-                #except:
-                              #print("输入错误，请返回主菜单!!")
+                except:
+                               print("输入错误，请返回主菜单!!")
 
 
 
